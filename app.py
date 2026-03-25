@@ -3,6 +3,7 @@ import yt_dlp
 
 app = Flask(__name__)
 
+# Kanal kütüphanemiz
 CHANNELS = {
     "sozcu": "https://www.youtube.com/@SozcuTelevizyonu/live",
     "cnnturk": "https://www.youtube.com/@cnnturk/live",
@@ -15,26 +16,28 @@ def get_direct_url(youtube_url):
         'format': 'best',
         'quiet': True,
         'simulate': True,
-        # SİHİRLİ DOKUNUŞ: YouTube'u bir mobil cihaz olduğumuza ikna ediyoruz
+        # İŞTE YENİ SİLAHIMIZ: Çerez dosyasını okuma komutu
+        'cookiefile': 'cookies.txt',
         'extractor_args': {'youtube': ['player_client=android,web']}
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             return ydl.extract_info(youtube_url, download=False).get('url')
     except Exception as e:
-        print(f"Hata detayı: {e}") # Render loglarında hatayı görmek için
+        print(f"Hata detayı: {e}")
         return None
 
 @app.route('/')
 def proxy():
     kanal = request.args.get('kanal', 'sozcu').lower()
     if kanal not in CHANNELS:
-        return "Kanal bulunamadi.", 404
+        return "Kanal listemizde bulunamadi.", 404
     
-    url = get_direct_url(CHANNELS[kanal])
-    if url:
-        return redirect(url, code=302)
-    return "Yayin alinamadi.", 500
+    direct_url = get_direct_url(CHANNELS[kanal])
+    if direct_url:
+        return redirect(direct_url, code=302)
+    
+    return "Yayin alinamadi. Cerezler gecersiz olabilir veya YouTube sunucuyu engelledi.", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
