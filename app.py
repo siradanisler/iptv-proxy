@@ -11,11 +11,18 @@ CHANNELS = {
 }
 
 def get_direct_url(youtube_url):
-    ydl_opts = {'format': 'best', 'quiet': True, 'simulate': True}
+    ydl_opts = {
+        'format': 'best',
+        'quiet': True,
+        'simulate': True,
+        # SİHİRLİ DOKUNUŞ: YouTube'u bir mobil cihaz olduğumuza ikna ediyoruz
+        'extractor_args': {'youtube': ['player_client=android,web']}
+    }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             return ydl.extract_info(youtube_url, download=False).get('url')
-    except:
+    except Exception as e:
+        print(f"Hata detayı: {e}") # Render loglarında hatayı görmek için
         return None
 
 @app.route('/')
